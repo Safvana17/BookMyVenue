@@ -4,7 +4,9 @@ import './index.css'
 import App from './app/App'
 import { Provider } from 'react-redux'
 import { store } from './redux/store'
+import { injectStore } from './lib/axios'
 
+injectStore(store)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
