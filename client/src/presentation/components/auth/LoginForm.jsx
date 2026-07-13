@@ -2,46 +2,47 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import { setAccessToken, setUser, setIsAuthenticated } from '@/redux/slices/authSlice'
-import api from '@/lib/axios'
-import { ROUTES } from '@/constatnts/routes'
+import { loginUser } from "@/redux/slices/authSlice";
+import { useLocation } from "react-router-dom";
+import { ROUTES } from '@/constants/routes'
+
 
 const LoginForm = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const location = useLocation()
 
-    const [formData, setFormData] = useState({ email: '', password: '' })
+    const role = location.state?.role || "user";
+    const email = location.state?.email || "";
+
+    const [formData, setFormData] = useState({ email, password:""})
     const [showPassword, setShowPassword] = useState(false)
     const [rememberMe, setRememberMe] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const { loading, error } = useSelector((state) => state.auth);
 
     const handleChange = (e) => {
-        setError(null)
+        
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
+   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        try {
-            const response = await api.post('/auth/login', formData)
-            const { accessToken, data } = response.data
+    const result = await dispatch(loginUser({
+        role,
+        data: formData,
+    })
+);
 
-            dispatch(setAccessToken(accessToken))
-            dispatch(setUser(data.user))
-            dispatch(setIsAuthenticated(true))
 
-            navigate(ROUTES.PUBLIC.HOME)
-        } catch (err) {
-            setError(err.response?.data?.message || 'Login failed. Please try again.')
-        } finally {
-            setLoading(false)
-        }
+    if (loginUser.fulfilled.match(result)) {
+        if(role === "vendor"){
+        navigate(ROUTES.PUBLIC.DASHBOARD);
+    }else{
+        navigate(ROUTES.PUBLIC.HOME);
     }
-
+}
+};
     return (
         <div className="flex flex-col justify-center px-8 md:px-16 py-16">
             <h1 className="text-3xl font-bold text-slate-800 mb-1">Welcome Back</h1>

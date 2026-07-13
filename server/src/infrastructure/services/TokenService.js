@@ -52,4 +52,3 @@ export class TokenService extends ITokenService{
         return result === 1
     }
 }
-

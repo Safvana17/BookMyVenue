@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react'
-import api from '@/lib/axios'
-import { API_ROUTES } from '@/constatnts/apiRoutes'
-import { ROUTES } from '@/constatnts/routes'
-import { registerSchema } from '@/lib/validators/auth.validators'
+
+
+import { ROUTES } from '@/constants/routes'
+import { registerSchema } from '@/lib/validation/authValidation'
+import { ROLES } from '@/constants/role' 
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "@/redux/slices/authSlice";   
 
 const RegisterForm = () => {
     const navigate = useNavigate()
@@ -15,41 +18,56 @@ const RegisterForm = () => {
         phone: '',
         password: ''
     })
-    const [role, setRole] = useState('customer')
+    const [role, setRole] = useState(ROLES.USER)
     const [showPassword, setShowPassword] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const [validationError, setValidationError] = useState("");
+    const dispatch = useDispatch();
 
-    const handleChange = (e) => {
-        setError(null)
-        setFormData({ ...formData, [e.target.name]: e.target.value })
+const { loading, error } = useSelector((state) => state.auth);
+
+const handleChange = (e) => {
+    setValidationError("");
+
+    setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+    });
+};
+    
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setValidationError("");
+
+    const validation = registerSchema.safeParse({
+        ...formData,
+        role,
+    });
+
+    if (!validation.success) {
+        setValidationError(validation.error.issues[0].message);
+        return;
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
+    const result = await dispatch(
+        registerUser({
+            role,
+            userData: validation.data,
+        })
+    );
 
-        const validation = registerSchema.safeParse({ ...formData, role })
-        if (!validation.success) {
-            setError(validation.error.errors[0].message)
-            setLoading(false)
-            return
-        }
-
-        try {
-            await api.post(API_ROUTES.AUTH.REGISTER, validation.data)
-            // Backend OTP endpoints are not wired yet — send user to login after signup
-            navigate(ROUTES.PUBLIC.LOGIN, {
-                state: { message: 'Account created successfully! Please sign in.' },
-            })
-        } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please try again.')
-        } finally {
-            setLoading(false)
-        }
+    if (registerUser.fulfilled.match(result)) {
+        navigate(ROUTES.PUBLIC.VERIFY_OTP, {
+            state: {
+                email: formData.email,
+                role,
+            },
+        });
     }
+};
 
+
+      
     return (
         <div className="flex flex-col justify-center px-8 md:px-16 py-12">
             <h1 className="text-3xl font-bold text-slate-800 mb-1">Create Account</h1>
@@ -59,8 +77,8 @@ const RegisterForm = () => {
             <div className="grid grid-cols-2 gap-3 mb-6">
                 <button
                     type="button"
-                    onClick={() => setRole('customer')}
-                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === 'customer' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
+                    onClick={() => setRole(ROLES.USER)}
+                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === ROLES.USER ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
                 >
                     <User size={20} />
                     <span className="font-semibold text-sm">Customer</span>
@@ -68,8 +86,8 @@ const RegisterForm = () => {
                 </button>
                 <button
                     type="button"
-                    onClick={() => setRole('vendor')}
-                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === 'vendor' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
+                    onClick={() => setRole(ROLES.VENDOR)}
+                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === ROLES.VENDOR ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
                 >
                     <span className="text-xl">🏛️</span>
                     <span className="font-semibold text-sm">Venue Owner</span>
@@ -77,7 +95,7 @@ const RegisterForm = () => {
                 </button>
             </div>
 
-            {error && (
+            {validationError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
                     {error}
                 </div>
@@ -138,3 +156,5 @@ const RegisterForm = () => {
 }
 
 export default RegisterForm
+
+

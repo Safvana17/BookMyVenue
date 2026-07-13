@@ -8,6 +8,7 @@ import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
 import cloudinaryUpload from "./presentation/middlewares/cloudinaryUpload.js";
 import { errorHandler } from './presentation/middlewares/errorHandler.js';
+import authRoutes from "./presentation/routes/v1/authroutes.js";
 
 const app = express()
 
@@ -47,7 +48,10 @@ app.get('/test', (req, res) => {
     })
 })
 
-app.use('/api', routes)
+//app.use('/api', routes)
+app.use("/api/v1/auth", authRoutes);
+
+
 app.use(errorHandler)
 
 

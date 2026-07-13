@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userVenueSlice from './slices/UserVenueSlice'
 
-import authReducer from "./slices/authSlice";
+import authSlice from "./slices/authSlice"
 import UserProfileSlice from "./slices/UserProfileSlice";
 import UserWishlistSlice from "./slices/UserWishlistSlice";
 import adminUserSlice from './slices/AdminUserSlice'
@@ -18,7 +18,7 @@ export const store = configureStore({
         userProfile: UserProfileSlice,
         userWishlist: UserWishlistSlice,
         adminVendor: adminVendorSlice,
-        auth: authReducer,
+        auth: authSlice,
         userVenue: userVenueSlice
         
 

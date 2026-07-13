@@ -1,4 +1,16 @@
+import{ROLES } from "./role";
+
+
 export const API_ROUTES = {
+    AUTH: {
+    REGISTER: (role) => `/auth/${role}/register`,
+    LOGIN: (role) => `/auth/${role}/login`,
+    VERIFY_OTP: (role) => `/auth/${role}/verifyotp`,
+    RESEND_OTP: (role) => `/auth/${role}/resendotp`,
+    FORGOT_PASSWORD: (role) => `/auth/${role}/forgotpassword`,
+    RESET_PASSWORD: (role) => `/auth/${role}/resetpassword`,
+    
+  },
     USER: {
         VENUE:{
           VENUES: '/user/venues',

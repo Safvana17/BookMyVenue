@@ -32,6 +32,22 @@ export class UserMapper {
       });
     }
 
+    static toDTO(entity) {
+        return {
+            id: entity.id,
+            fullName: entity.fullName,
+            email: entity.email,
+            phone: entity.phone,
+            role: entity.role,
+            isVerified: entity.isVerified,
+            isOtpVerified: entity.isOtpVerified,
+            profileImage: entity.profileImage,
+            isBlocked: entity.isBlocked,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt,
+        };
+    }
+
     static mapToPersistence(entity) {
         return {
             fullName: entity.fullName,

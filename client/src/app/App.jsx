@@ -3,14 +3,21 @@ import { Suspense,lazy } from "react";
 import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
 
-
 const Home = lazy(() => import("@/presentation/pages/Home"))
+
 
 const UserProfile = lazy(() => import("@/presentation/pages/user/UserProfile"))
 const UserChangePassword = lazy(() => import("@/presentation/pages/user/ChangePassword"))
 const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
 const UserBookings = lazy(() => import("@/presentation/pages/user/BookingHistory"))
 const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingDetail"))
+
+const Login = lazy(() => import("@/presentation/pages/auth/Login"))
+const Register = lazy(() => import("@/presentation/pages/auth/Register"))
+const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"))
+const ForgotPassword = lazy(() => import("@/presentation/pages/auth/ForgotPassword"))
+const ResetPassword = lazy(() => import("@/presentation/pages/auth/ResetPassword"))
+
 
 const Dashboard=lazy(()=>
 import("@/presentation/pages/vendor/Dashboard")
@@ -71,14 +78,23 @@ function App() {
     <BrowserRouter>
     <Suspense fallback={<h1>Loading...</h1>}>
       <Routes>
+          {/* Public / Auth routes */}
           <Route path={ROUTES.PUBLIC.HOME} element={<Home />}/>
+          <Route path={ROUTES.PUBLIC.LOGIN} element={<Login />} />
+          <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
+          <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />} />
+          <Route path={ROUTES.PUBLIC.FORGOT_PASSWORD} element={<ForgotPassword />} />
+          <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<ResetPassword />} />
+
+          {/* User routes */}
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
           <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
-          <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
+        <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
           <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />}/>
 
+          {/* Vendor routes */}
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard/>}/>
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>
           <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings/>}/>
