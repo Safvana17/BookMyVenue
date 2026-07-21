@@ -2,11 +2,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
+
 import RoleRoute from "@/components/auth/RoleRoute";
 import { ROLES } from "@/constants/role";
 
 
 import VenueDetails from "@/presentation/pages/admin/VenueDetails";
+
 
 
 const Home = lazy(() => import("@/presentation/pages/Home"))
@@ -17,6 +19,7 @@ const UserChangePassword = lazy(() => import("@/presentation/pages/user/ChangePa
 const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
 const UserBookings = lazy(() => import("@/presentation/pages/user/BookingHistory"))
 const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingDetail"))
+
 
 
 const Login = lazy(() => import("@/presentation/pages/auth/Login"))
@@ -48,6 +51,14 @@ const AddVenue = lazy(() =>
 const Settings = lazy(() =>
   import("@/presentation/pages/vendor/Settings"))
 
+
+
+
+
+const EditVenue = lazy(() => import("@/presentation/pages/vendor/EditVenue"));
+
+
+
 // Admin Layout
 const AdminLayout = lazy(() =>
   import("@/presentation/layouts/AdminLayout")
@@ -69,10 +80,14 @@ const VendorManagement = lazy(() =>
 const VenueManagement = lazy(() =>
   import("@/presentation/pages/admin/VenueManagement")
 );
-
+/*const VenueDetails = lazy(() => 
+  import("@/presentation/pages/admin/VenueDetails")
+)*/
 const BookingDetails = lazy(() => 
   import("@/presentation/pages/admin/BookingDetails")
 )
+
+
 
 const BookingManagement = lazy(() =>
   import("@/presentation/pages/admin/BookingManagement")
@@ -81,6 +96,9 @@ const BookingManagement = lazy(() =>
 const PaymentManagement = lazy(() =>
   import("@/presentation/pages/admin/PaymentManagement")
 );
+const PaymentDetails = lazy(() => 
+  import("@/presentation/pages/admin/PaymentDetails")
+)
 
 const CategoryManagement = lazy(() =>
   import("@/presentation/pages/admin/CategoryManagement")
@@ -90,6 +108,7 @@ const CategoryManagement = lazy(() =>
 function App() {
   return (
     <BrowserRouter>
+
 
     <Suspense fallback={<h1>Loading...</h1>}>
       <Routes>
@@ -105,12 +124,17 @@ function App() {
 
       
 
+
+      
+          <Route path={ROUTES.PUBLIC.HOME} element={<Home />} />
+
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
           <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
         <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
           <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />} />
+
 
 
           {/* Vendor routes */}
@@ -121,6 +145,8 @@ function App() {
           <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings />} />
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />
+
+
 
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
 
@@ -134,7 +160,11 @@ function App() {
 
             <Route
               path={ROUTES.ADMIN.DASHBOARD}
+
               element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></RoleRoute>}
+
+              
+
             />
 
             <Route
@@ -155,6 +185,17 @@ function App() {
             <Route
               path={ROUTES.ADMIN.VENUE_DETAILS}
               element={<VenueDetails />}
+
+            />
+
+            <Route
+              path={ROUTES.ADMIN.BOOKINGS}
+              element={<BookingManagement />}
+
+            />
+            <Route
+              path={ROUTES.ADMIN.BOOKING_DETAIL}
+              element={<BookingDetails />}
             />
 
             <Route
@@ -167,8 +208,12 @@ function App() {
             />
 
             <Route
-              path="payments"
+              path={ROUTES.ADMIN.PAYMENTS}
               element={<PaymentManagement />}
+            />
+            <Route
+              path={ROUTES.ADMIN.PAYMENT_DETAILS}
+              element={<PaymentDetails />}
             />
 
             <Route
