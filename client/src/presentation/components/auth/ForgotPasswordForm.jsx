@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, ArrowLeft } from 'lucide-react'
 import api from '@/lib/axios'
-import { API_ROUTES } from '@/constatnts/apiRoutes'
-import { ROUTES } from '@/constatnts/routes'
+import { ROLES } from "@/constants/role";
+import { API_ROUTES } from "@/constants/apiRoutes"
 
-const ForgotPasswordForm = () => {
+import { ROUTES } from '@/constants/routes'
+
+const ForgotPasswordForm = ({role}) => {
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -17,11 +19,13 @@ const ForgotPasswordForm = () => {
         setError(null)
 
         try {
-            await api.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email })
+            await api.post(API_ROUTES.AUTH.FORGOT_PASSWORD(role), { email })
             setSuccess(true)
         } catch (err) {
+            console.log(err)
             setError(err.response?.data?.message || 'Something went wrong. Please try again.')
         } finally {
+            
             setLoading(false)
         }
     }

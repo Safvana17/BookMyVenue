@@ -1,54 +1,90 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate, Link } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import { loginUser } from "@/redux/slices/authSlice";
-import { useLocation } from "react-router-dom";
-import { ROUTES } from '@/constants/routes'
-
+import { useNavigate, Link, useLocation } from 'react-router-dom'
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { login } from "@/redux/slices/authSlice"
+import { ROUTES } from "@/constants/routes"
+import { ROLES } from '@/constants/role' 
+import toast from "react-hot-toast"
 
 const LoginForm = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const location = useLocation()
 
-    const role = location.state?.role || "user";
-    const email = location.state?.email || "";
+    const initialRole = location.state?.role || ROLES.USER
+    const initialEmail = location.state?.email || ""
 
-    const [formData, setFormData] = useState({ email, password:""})
+    const [role, setRole] = useState(initialRole)
+    const [formData, setFormData] = useState({ email: initialEmail, password: "" })
     const [showPassword, setShowPassword] = useState(false)
-    const [rememberMe, setRememberMe] = useState(false)
-    const { loading, error } = useSelector((state) => state.auth);
+    
+    const { loading, error } = useSelector((state) => state.auth)
 
     const handleChange = (e) => {
-        
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-   const handleSubmit = async (e) => {
-    e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault()
 
-    const result = await dispatch(loginUser({
-        role,
-        data: formData,
-    })
-);
+        try {
+            // 1. Dispatch login action passing selected role (USER or VENDOR)
+            const result = await dispatch(
+                login({
+                    role, 
+                    data: formData,
+                })
+            ).unwrap()
 
+            toast.success("Login successful!")
 
-    if (loginUser.fulfilled.match(result)) {
-        if(role === "vendor"){
-        navigate(ROUTES.PUBLIC.DASHBOARD);
-    }else{
-        navigate(ROUTES.PUBLIC.HOME);
+            // 2. Extract user role safely from API response or selected state
+            const userRole = result?.data?.user?.role || result?.data?.vendor?.role || result?.user?.role || result?.role || role
+
+            // 3. Route cleanly using ROLES constants
+            if (userRole === ROLES.VENDOR) {
+                navigate(ROUTES.VENDOR.DASHBOARD)
+            
+            } else if (userRole === ROLES.USER) {
+                // Safety net: If an admin logs in here by mistake, send them to admin dashboard
+                navigate(ROUTES.PUBLIC.HOME)
+            } 
+
+        } catch (err) {
+            console.error("Login failed:", err)
+            toast.error(err?.message || err || "Invalid email or password")
+        }
     }
-}
-};
+
     return (
         <div className="flex flex-col justify-center px-8 md:px-16 py-16">
             <h1 className="text-3xl font-bold text-slate-800 mb-1">Welcome Back</h1>
-            <p className="text-slate-500 mb-8">Sign in to your account to continue</p>
+            <p className="text-slate-500 mb-6">Sign in to your account to continue</p>
 
-            {/* Error */}
+            {/* Role Selector Buttons */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+                <button
+                    type="button"
+                    onClick={() => setRole(ROLES.USER)}
+                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === ROLES.USER ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
+                >
+                    <User size={20} />
+                    <span className="font-semibold text-sm">Customer</span>
+                    <span className="text-xs text-slate-400">Book venues</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setRole(ROLES.VENDOR)}
+                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition ${role === ROLES.VENDOR ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-200 text-slate-500'}`}
+                >
+                    <span className="text-xl">🏛️</span>
+                    <span className="font-semibold text-sm">Venue Owner</span>
+                    <span className="text-xs text-slate-400">List venues</span>
+                </button>
+            </div>
+
+            {/* Error Message Banner */}
             {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
                     {error}
@@ -56,7 +92,7 @@ const LoginForm = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
+                {/* Email Field */}
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
                         Email Address
@@ -75,7 +111,7 @@ const LoginForm = () => {
                     </div>
                 </div>
 
-                {/* Password */}
+                {/* Password Field */}
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
                         Password
@@ -101,17 +137,8 @@ const LoginForm = () => {
                     </div>
                 </div>
 
-                {/* Remember me + Forgot password */}
+                {/* Forgot Password Link */}
                 <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={rememberMe}
-                            onChange={(e) => setRememberMe(e.target.checked)}
-                            className="w-4 h-4 accent-amber-500"
-                        />
-                        Remember me
-                    </label>
                     <Link
                         to={ROUTES.PUBLIC.FORGOT_PASSWORD}
                         className="text-sm text-amber-500 hover:underline"
@@ -120,7 +147,7 @@ const LoginForm = () => {
                     </Link>
                 </div>
 
-                {/* Sign In button */}
+                {/* Sign In Button */}
                 <button
                     type="submit"
                     disabled={loading}
@@ -136,7 +163,7 @@ const LoginForm = () => {
                     <div className="flex-1 h-px bg-slate-200" />
                 </div>
 
-                {/* Social buttons */}
+                {/* Social Buttons */}
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         type="button"

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react'
 
-
 import { ROUTES } from '@/constants/routes'
 import { registerSchema } from '@/lib/validation/authValidation'
 import { ROLES } from '@/constants/role' 
@@ -11,62 +10,68 @@ import { registerUser } from "@/redux/slices/authSlice";
 
 const RegisterForm = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch();
 
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         phone: '',
-        password: ''
+        password: '',
+        confirmPassword: '',
     })
     const [role, setRole] = useState(ROLES.USER)
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [validationError, setValidationError] = useState("");
-    const dispatch = useDispatch();
 
-const { loading, error } = useSelector((state) => state.auth);
+    const { loading, error } = useSelector((state) => state.auth);
 
-const handleChange = (e) => {
-    setValidationError("");
-
-    setFormData({
-        ...formData,
-        [e.target.name]: e.target.value,
-    });
-};
-    
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setValidationError("");
-
-    const validation = registerSchema.safeParse({
-        ...formData,
-        role,
-    });
-
-    if (!validation.success) {
-        setValidationError(validation.error.issues[0].message);
-        return;
-    }
-
-    const result = await dispatch(
-        registerUser({
-            role,
-            userData: validation.data,
-        })
-    );
-
-    if (registerUser.fulfilled.match(result)) {
-        navigate(ROUTES.PUBLIC.VERIFY_OTP, {
-            state: {
-                email: formData.email,
-                role,
-            },
+    const handleChange = (e) => {
+        setValidationError("");
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
         });
-    }
-};
+    };
+        
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setValidationError("");
 
+        // 1. Client-side check: Match passwords before running Zod/Schema validation
+        if (formData.password !== formData.confirmPassword) {
+            setValidationError('Passwords do not match');
+            return;
+        }
 
+        // 2. Schema validation
+        const validation = registerSchema.safeParse({
+            ...formData,
+            role,
+        });
+
+        if (!validation.success) {
+            setValidationError(validation.error.issues[0].message);
+            return;
+        }
+
+        // 3. Dispatch to API
+        const result = await dispatch(
+            registerUser({
+                role,
+                userData: validation.data,
+            })
+        );
+
+        if (registerUser.fulfilled.match(result)) {
+            navigate(ROUTES.PUBLIC.VERIFY_OTP, {
+                state: {
+                    email: formData.email,
+                    role,
+                },
+            });
+        }
+    };
       
     return (
         <div className="flex flex-col justify-center px-8 md:px-16 py-12">
@@ -95,9 +100,10 @@ const handleChange = (e) => {
                 </button>
             </div>
 
-            {validationError && (
+            {/* Displays local validation problems OR server responses */}
+            {(validationError || error) && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                    {error}
+                    {validationError || error}
                 </div>
             )}
 
@@ -141,6 +147,19 @@ const handleChange = (e) => {
                     </div>
                 </div>
 
+                {/* Confirm Password Field */}
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
+                    <div className="relative">
+                        <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Repeat your password" required
+                            className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                    </div>
+                </div>
+
                 <button type="submit" disabled={loading}
                     className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition disabled:opacity-60">
                     {loading ? 'Creating account...' : 'Create Account'}
@@ -156,5 +175,3 @@ const handleChange = (e) => {
 }
 
 export default RegisterForm
-
-

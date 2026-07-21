@@ -144,6 +144,18 @@ export class UserRepository extends IUserRepository {
 
         return UserMapper.mapToEntity(document);
     }
+
+    async updatePassword(id, hashedPassword) {
+        const document = await UserModel.findByIdAndUpdate(
+            id,
+            { $set: { password: hashedPassword, resetToken: null, resetTokenExpiry: null } },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
     //--
     async findByRefreshToken(refreshToken) {
         const document = await UserModel.findOne({

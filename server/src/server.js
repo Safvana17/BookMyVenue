@@ -48,8 +48,8 @@ app.get('/test', (req, res) => {
     })
 })
 
-//app.use('/api', routes)
-app.use("/api/v1/auth", authRoutes);
+app.use('/api', routes)
+
 
 
 app.use(errorHandler)

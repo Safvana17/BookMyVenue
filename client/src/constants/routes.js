@@ -27,11 +27,14 @@ export const ROUTES = {
     },
     ADMIN: {
         ROOT: "/admin", 
+        LOGIN: "/admin/login",
         DASHBOARD: "/admin/dashboard",
         USERS: "users",
         VENDORS: "vendors",
-        VENUES: "/admin/venues",
-        BOOKINGS: "/admin/bookings",
+        VENUES: "venues",
+        VENUE_DETAILS: "venues/:venueId",
+        BOOKINGS: "bookings",
+        BOOKING_DETAIL: "bookings/:bookingId",
         PAYMENTS: "/admin/payments",
         CATEGORIES: "/admin/categories",
     }

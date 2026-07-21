@@ -3,7 +3,7 @@ import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
 import { ROLES } from "@/constants/role";
 
-// Updated state to include your missing login fields
+// Pure Redux Initial State (In-Memory)
 const initialState = {
   loading: false,
   error: null,
@@ -14,7 +14,7 @@ const initialState = {
   isAuthenticated: false,
 };
 
-// Register User / Vendor
+// Register User / Vendor / Admin
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async ({ role = ROLES.USER, userData }, { rejectWithValue }) => {
@@ -58,15 +58,36 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-// Login User using inner dispatch mechanism
-export const loginUser = createAsyncThunk(
-  "auth/login",
-  async ({role,data}, { dispatch, rejectWithValue }) => { // 1. Destructured dispatch here
-
-
+// Reset Password
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ role = ROLES.USER, token, password, confirmPassword }, { rejectWithValue }) => {
     try {
-      // 2. Automatically dispatch your synchronous reducer action to clear old errors
-      dispatch(clearAuthError()); 
+      const response = await api.post(
+        API_ROUTES.AUTH.RESET_PASSWORD(role),
+        {
+          token,
+          password,
+          newPassword:password,
+          confirmPassword,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Password reset failed"
+      );
+    }
+  }
+);
+
+// Login User / Vendor 
+export const login = createAsyncThunk(
+  "auth/login",
+  async ({ role = ROLES.USER, data }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(clearAuthError());
 
       const response = await api.post(
         API_ROUTES.AUTH.LOGIN(role),
@@ -75,13 +96,50 @@ export const loginUser = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-     
       return rejectWithValue(
         error.response?.data?.message || "Login failed"
       );
     }
   }
 );
+
+// Admin login
+export const adminLogin = createAsyncThunk(
+  "auth/adminLogin",
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(clearAuthError());
+
+      const endpoint = API_ROUTES.AUTH.ADMIN_LOGIN || API_ROUTES.AUTH.LOGIN(ROLES.ADMIN);
+      
+      const response = await api.post(endpoint, data);
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Admin login failed"
+      );
+    }
+  }
+);
+
+// Helper function to handle state updates for both login thunks
+const handleLoginFulfilled = (state, action, fallbackRole) => {
+  state.loading = false;
+  
+  const responseData = action.payload?.data || action.payload || {};
+  const accessToken = responseData.accessToken || responseData.token;
+  
+  // Dynamic extraction for user, admin, or vendor entity
+  const userEntity = responseData.user || responseData.admin || responseData.vendor;
+
+  state.accessToken = accessToken;
+  state.user = userEntity;
+  
+  // Safely assign role
+  state.role = userEntity?.role || (responseData.admin ? ROLES.ADMIN : (action.meta?.arg?.role || fallbackRole));
+  state.isAuthenticated = true;
+};
 
 const authSlice = createSlice({
   name: "auth",
@@ -94,6 +152,16 @@ const authSlice = createSlice({
 
     resetOtpStatus: (state) => {
       state.otpVerified = false;
+    },
+
+    logout: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.role = null;
+      state.otpVerified = false;
+      state.user = null;
+      state.accessToken = null;
+      state.isAuthenticated = false;
     },
   },
 
@@ -127,24 +195,48 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Login
-      .addCase(loginUser.pending, (state) => {
+      // Reset Password
+      .addCase(resetPassword.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(resetPassword.fulfilled, (state) => {
         state.loading = false;
-        state.accessToken = action.payload.accessToken;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
       })
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Login
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        handleLoginFulfilled(state, action, ROLES.USER);
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+
+      // Admin Login
+      .addCase(adminLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(adminLogin.fulfilled, (state, action) => {
+        handleLoginFulfilled(state, action, ROLES.ADMIN);
+      })
+      .addCase(adminLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
       });
   },
 });
 
-export const { clearAuthError, resetOtpStatus } = authSlice.actions;
-
+export const { clearAuthError, resetOtpStatus, logout } = authSlice.actions;
 export default authSlice.reducer;

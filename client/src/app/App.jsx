@@ -1,7 +1,13 @@
-import {BrowserRouter,Routes,Route} from "react-router-dom";
-import { Suspense,lazy } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
+import RoleRoute from "@/components/auth/RoleRoute";
+import { ROLES } from "@/constants/role";
+
+
+import VenueDetails from "@/presentation/pages/admin/VenueDetails";
+
 
 const Home = lazy(() => import("@/presentation/pages/Home"))
 
@@ -12,7 +18,10 @@ const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
 const UserBookings = lazy(() => import("@/presentation/pages/user/BookingHistory"))
 const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingDetail"))
 
+
 const Login = lazy(() => import("@/presentation/pages/auth/Login"))
+
+const AdminLogin = lazy(() => import("@/presentation/pages/admin/AdminLogin")); 
 const Register = lazy(() => import("@/presentation/pages/auth/Register"))
 const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"))
 const ForgotPassword = lazy(() => import("@/presentation/pages/auth/ForgotPassword"))
@@ -20,23 +29,24 @@ const ResetPassword = lazy(() => import("@/presentation/pages/auth/ResetPassword
 
 
 const Dashboard=lazy(()=>
-import("@/presentation/pages/vendor/Dashboard")
-);
+import("@/presentation/pages/vendor/Dashboard"))
 
-const VenueList=lazy(()=>
-import("@/presentation/pages/vendor/VenueList"))
 
-const Bookings=lazy(()=>
-import("@/presentation/pages/vendor/Bookings"))
 
-const Profile=lazy(()=>
-import("@/presentation/pages/vendor/Profile"))
+const VenueList = lazy(() =>
+  import("@/presentation/pages/vendor/VenueList"))
 
-const AddVenue=lazy(()=>
-import("@/presentation/pages/vendor/AddVenue"))
+const Bookings = lazy(() =>
+  import("@/presentation/pages/vendor/Bookings"))
 
-const Settings=lazy(()=>
-import("@/presentation/pages/vendor/Settings"))
+const Profile = lazy(() =>
+  import("@/presentation/pages/vendor/Profile"))
+
+const AddVenue = lazy(() =>
+  import("@/presentation/pages/vendor/AddVenue"))
+
+const Settings = lazy(() =>
+  import("@/presentation/pages/vendor/Settings"))
 
 // Admin Layout
 const AdminLayout = lazy(() =>
@@ -60,6 +70,10 @@ const VenueManagement = lazy(() =>
   import("@/presentation/pages/admin/VenueManagement")
 );
 
+const BookingDetails = lazy(() => 
+  import("@/presentation/pages/admin/BookingDetails")
+)
+
 const BookingManagement = lazy(() =>
   import("@/presentation/pages/admin/BookingManagement")
 );
@@ -76,6 +90,7 @@ const CategoryManagement = lazy(() =>
 function App() {
   return (
     <BrowserRouter>
+
     <Suspense fallback={<h1>Loading...</h1>}>
       <Routes>
           {/* Public / Auth routes */}
@@ -87,28 +102,39 @@ function App() {
           <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<ResetPassword />} />
 
           {/* User routes */}
+
+      
+
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
           <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
         <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
-          <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />}/>
+          <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />} />
+
 
           {/* Vendor routes */}
-          <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard/>}/>
-          <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>
-          <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings/>}/>
-          <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue/>}/>
-          <Route path={ROUTES.VENDOR.PROFILE} element={<Profile/>}/>
+          
+
+          <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard />} />
+          <Route path={ROUTES.VENDOR.VENUES} element={<VenueList />} />
+          <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings />} />
+          <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
+          <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />
+
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
 
           {/* Admin Routes */}
 
+          <Route path={ROUTES.ADMIN.LOGIN} element={<AdminLogin />} />
+
           <Route path="/admin" element={<AdminLayout />}>
 
+          
+
             <Route
-              path="dashboard"
-              element={<AdminDashboard />}
+              path={ROUTES.ADMIN.DASHBOARD}
+              element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></RoleRoute>}
             />
 
             <Route
@@ -122,13 +148,22 @@ function App() {
             />
 
             <Route
-              path="venues"
+              path={ROUTES.ADMIN.VENUES}
               element={<VenueManagement />}
             />
 
             <Route
-              path="bookings"
+              path={ROUTES.ADMIN.VENUE_DETAILS}
+              element={<VenueDetails />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.BOOKINGS}
               element={<BookingManagement />}
+            />
+            <Route
+              path={ROUTES.ADMIN.BOOKING_DETAIL}
+              element={<BookingDetails />}
             />
 
             <Route
@@ -143,8 +178,8 @@ function App() {
 
           </Route>
 
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
