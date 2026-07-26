@@ -47,14 +47,21 @@ console.log({
     // ===== Date validation =====
     if (!bookingDate) throw new ValidationError(BookingMessages.error.BOOKING_DATE_REQUIRED);
 
-  const today = new Date();
-today.setUTCHours(0, 0, 0, 0);
+const today = new Date();
+
+const todayUTC = new Date(
+  Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  )
+);
 
 const selectedDate = new Date(`${bookingDate}T00:00:00.000Z`);
 
-    if (selectedDate < today) {
-      throw new ValidationError(BookingMessages.error.BOOKING_DATE_INVALID);
-    }
+if (selectedDate < todayUTC) {
+  throw new ValidationError(BookingMessages.error.BOOKING_DATE_INVALID);
+}
 
     let bookingDuration = 0;
 
@@ -168,7 +175,7 @@ const reservationKey = `reservation:${venueId}:${bookingDate}`;
     const totalAmount = bookingAmount + weekendCharge + securityDeposit;
 
     // Advance payment calculation
-    const hoursDifference = (selectedDate - today) / (1000 * 60 * 60);
+    const hoursDifference = (selectedDate - todayUTC) / (1000 * 60 * 60);
     let advanceAmount;
     let remainingAmount;
 
