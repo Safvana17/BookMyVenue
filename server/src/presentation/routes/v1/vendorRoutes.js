@@ -92,7 +92,7 @@ router.get
 (ROUTES.OWNER.PROFILE.GET, 
 authHandler(iTokenService),
  iVendorProfileController.getProfile);
-
+ 
 router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,
   authHandler(iTokenService),
