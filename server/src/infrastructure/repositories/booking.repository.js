@@ -397,7 +397,7 @@ export class BookingRepositoryImpl extends BookingRepository {
         };
 
     }
-   async hasOverlappingBooking(
+async hasOverlappingBooking(
     venueId,
     bookingDate,
     startTime,
