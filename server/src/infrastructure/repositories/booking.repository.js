@@ -403,19 +403,35 @@ export class BookingRepositoryImpl extends BookingRepository {
             startTime,
             endTime
         ) {
-        const booking=await BookingModel.findOne({
-            venueId,
-            bookingDate,
-            status:{
-                $ne:BookingStatus.CANCELLED
-            },
-            startTime:{
-                $lt:endTime
-            },
-            endTime:{
-                $gt:startTime
-            }
-        })
+            console.log("=== Repository Input ===");
+console.log({
+  venueId,
+  bookingDate,
+  startTime,
+  endTime,
+});
+       const startOfDay = new Date(bookingDate);
+startOfDay.setUTCHours(0, 0, 0, 0);
+
+const endOfDay = new Date(bookingDate);
+endOfDay.setUTCHours(23, 59, 59, 999);
+
+const booking = await BookingModel.findOne({
+    venueId,
+    bookingDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+    },
+    status: {
+        $ne: BookingStatus.CANCELLED,
+    },
+    startTime: {
+        $lt: endTime,
+    },
+    endTime: {
+        $gt: startTime,
+    },
+});
         return Boolean(booking)
      }
 

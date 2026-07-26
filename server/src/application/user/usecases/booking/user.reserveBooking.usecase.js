@@ -22,6 +22,19 @@ export class UserReserveBookingUsecase {
       bookingType,
     } = bookingData;
 
+
+    //error check delete after console.log("=== Request Data ===");
+          console.log("=== Request Data ===");
+console.log({
+  venueId,
+  bookingDate,
+  startTime,
+  endTime,
+  guestCount,
+  bookingType,
+});
+
+
     // ===== Venue validation =====
     const venue = await this._venueRepository.findById(venueId);
     if (!venue) throw new NotFoundError(BookingMessages.error.VENUE_NOT_FOUND);
@@ -34,10 +47,10 @@ export class UserReserveBookingUsecase {
     // ===== Date validation =====
     if (!bookingDate) throw new ValidationError(BookingMessages.error.BOOKING_DATE_REQUIRED);
 
-    const today = new Date();
-    const selectedDate = new Date(bookingDate);
-    today.setHours(0, 0, 0, 0);
-    selectedDate.setHours(0, 0, 0, 0);
+  const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
+
+const selectedDate = new Date(`${bookingDate}T00:00:00.000Z`);
 
     if (selectedDate < today) {
       throw new ValidationError(BookingMessages.error.BOOKING_DATE_INVALID);
@@ -107,6 +120,14 @@ export class UserReserveBookingUsecase {
     }
 
     // ===== Overlap check =====
+console.log("=== Checking DB Overlap ===");
+console.log({
+  venueId,
+  selectedDate,
+  startTime,
+  endTime,
+});
+
     const hasOverlappingBooking = await this._bookingRepository.hasOverlappingBooking(
       venueId,
       selectedDate,

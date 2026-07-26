@@ -24,6 +24,8 @@ export class UserConfirmBookingUsecase {
         venueId,
         bookingDate
     }) {
+        console.log("=== Confirm Booking Called ===");
+console.log(reservationId);
 const reservationKey = `reservation:${venueId}:${bookingDate}`;
 console.log("Looking up reservation with key:", reservationKey);
         const reservations =
