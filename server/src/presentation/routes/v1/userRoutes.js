@@ -32,12 +32,14 @@ router.get(
 )
 
 router.patch(
+
     ROUTES.USER.PROFILE.PROFILE,
     authHandler(iTokenService),
     validate(updateProfileSchema),
     iUserProfileController.updateProfile
 )
 router.post(
+
     ROUTES.USER.PROFILE.REQUEST_EMAIL_CHANGE_OTP,
     authHandler(iTokenService),
     validate(RequestEmailChangeOtpSchema,'body'),
@@ -50,6 +52,7 @@ router.post(
     iUserProfileController.verifyEmailChangeOtp
 )
 router.post(
+
     ROUTES.USER.PROFILE.RESEND_EMAIL_CHANGE_OTP,
     authHandler(iTokenService),
     iUserProfileController.resendEmailChangeOtp
@@ -117,8 +120,14 @@ router.get(
     authHandler(iTokenService),
     iUserBookingController.getBookings
 );
+router.get(
+    ROUTES.USER.BOOKING.AVAILABILITY,
+    authHandler(iTokenService),
+    iUserBookingController.getAvailability
+);
 
 router.get(
+
     ROUTES.USER.BOOKING.GET_BY_ID,
     authHandler(iTokenService),
     iUserBookingController.getBookingById

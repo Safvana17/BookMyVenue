@@ -2,8 +2,6 @@ import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
 
-
-
 export class UserBookingController {
 
     constructor(
@@ -11,18 +9,21 @@ export class UserBookingController {
         userConfirmBookingUsecase,
         userGetBookingsUsecase,
         userGetBookingByIdUsecase,
-         userCancelBookingUsecase
+        userCancelBookingUsecase,
+        userAvailabilityUsecase
     ) {
         this._userReserveBookingUsecase = userReserveBookingUsecase;
         this._userConfirmBookingUsecase = userConfirmBookingUsecase;
          this._userGetBookingsUsecase = userGetBookingsUsecase;
         this._userGetBookingByIdUsecase = userGetBookingByIdUsecase;
          this._userCancelBookingUsecase = userCancelBookingUsecase;
+        this._userAvailabilityUsecase = userAvailabilityUsecase;
     }
 
     reserveBooking = asyncHandler(async (req, res) => {
 
-       const userId = req.user.id;
+        const userId = req.user.id;
+
         const result =
             await this._userReserveBookingUsecase.execute(
                 userId,
@@ -90,7 +91,6 @@ export class UserBookingController {
 
         const userId = req.user.id;
 
-
         const { bookingId } = req.params;
 
         const result =
@@ -131,5 +131,25 @@ export class UserBookingController {
         );
 
     });
+
+getAvailability = asyncHandler(async (req, res) => {
+
+    const { venueId } = req.params;
+    const { month, year } = req.query;
+
+
+    const result = await this._userAvailabilityUsecase.execute(
+        venueId,
+        Number(month),
+        Number(year)
+    );
+
+    return sendSuccess(
+        res,
+        statusCode.OK,
+        "Availability fetched successfully.",
+        result
+    );
+});
 
 }
